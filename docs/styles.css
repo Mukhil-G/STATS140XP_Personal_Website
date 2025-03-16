@@ -1,14 +1,14 @@
 /* css styles */
 .quarto-about-broadside .about-image {
-  margin-top: -40px; /* Adjusted for better positioning */
+  margin-top: -40px; 
 }
 
-/* Additional styling for better appearance */
+
 .quarto-title {
   font-weight: bold;
 }
 
-/* Improve project cards if you decide to use them */
+
 .card {
   border-radius: 8px;
   transition: transform 0.3s ease;
@@ -20,7 +20,7 @@
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
-/* Better link styling */
+
 a {
   text-decoration: none;
   color: #4b6cb7;
