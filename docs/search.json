@@ -61,5 +61,26 @@
     "title": "Mukhil Guna",
     "section": "Research Interests",
     "text": "Research Interests\n\nStatistical Modeling\nData Science\nMachine Learning Applications\nSports Analytics"
+  },
+  {
+    "objectID": "projects/project1.html#project-overview",
+    "href": "projects/project1.html#project-overview",
+    "title": "Baseball Analytics Dashboard",
+    "section": "",
+    "text": "This project analyzes MLB player performance using statistical methods and interactive visualizations.\n\n\nView full project on Google Drive \n```"
+  },
+  {
+    "objectID": "projects/project1.html#key-features",
+    "href": "projects/project1.html#key-features",
+    "title": "Baseball Analytics Dashboard",
+    "section": "Key Features",
+    "text": "Key Features\n\nStatistical analysis of pitch sequencing patterns\nEvaluation of swing and miss percentages\nVisualization of whiff rates and chase percentages\nIdentification of optimal pitch combinations"
+  },
+  {
+    "objectID": "projects/project1.html#technologies-used",
+    "href": "projects/project1.html#technologies-used",
+    "title": "Baseball Analytics Dashboard",
+    "section": "Technologies Used",
+    "text": "Technologies Used\n\nR\nggplot2\ndplyr\ngridExtra"
   }
 ]
