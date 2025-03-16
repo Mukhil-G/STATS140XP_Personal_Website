@@ -2,35 +2,20 @@
 title: "Projects"
 ---
 
-## Featured Projects
+## Data Science Projects
 
-Here you'll find a collection of my data science and statistics projects. Each project demonstrates different analytical skills and techniques.
-
-### Baseball Analytics Dashboard
+### UCLA Baseball Pitch Sequencing Analysis
 
 [View Project](/projects/project1.qmd)
 
-This interactive dashboard analyzes MLB player performance metrics using R Shiny. The project includes:
+This project analyzes the effectiveness of different pitch sequences used by the UCLA baseball team:
 
-- Statistical analysis of batting averages across seasons
-- Predictive modeling for player performance
-- Interactive visualizations of team statistics
-- Comparative analysis of player metrics
+-   Statistical analysis of pitch sequencing patterns
+-   Evaluation of swing and miss percentages based on pitch type
+-   Visualization of whiff rates and chase percentages
+-   Identification of optimal pitch combinations
 
-**Technologies used:** R, Shiny, ggplot2, dplyr
-
-### Predictive Modeling for Stock Prices
-
-[View Project](#) <!-- Add actual link when available -->
-
-A machine learning approach to predict stock price movements based on historical data and market indicators:
-
-- Time series analysis of market trends
-- Feature engineering from financial indicators
-- Implementation of LSTM neural networks
-- Backtesting and model evaluation
-
-**Technologies used:** Python, TensorFlow, Pandas, NumPy
+**Technologies used:** R, ggplot2, dplyr, gridExtra
 
 ### More Projects Coming Soon
 

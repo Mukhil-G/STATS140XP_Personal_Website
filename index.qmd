@@ -12,8 +12,8 @@ about:
       text: Email
       href: "mailto:mukhil@g.ucla.edu"
     - icon: file-text
-      text: CV
-      href: "/CV.pdf"
+      text: Resume
+      href: "/Resume7_Overleaf.pdf"
     - icon: linkedin
       text: LinkedIn
       href: "#" # Add your LinkedIn URL here
@@ -25,7 +25,7 @@ I am a Statistics student at UCLA with a passion for data analysis and statistic
 
 When not immersed in data and analytics, I enjoy playing soccer and exploring the vibrant city of Los Angeles.
 
-Feel free to explore my [projects](/Projects.qmd) or download my [CV](/CV.pdf) to learn more about my work.
+Feel free to explore my [projects](/Projects.qmd) or download my [Resume](/Resume7_Overleaf.pdf) to learn more about my work.
 
 ## Education
 
