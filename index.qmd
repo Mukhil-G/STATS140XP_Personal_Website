@@ -16,7 +16,7 @@ about:
       href: "/Resume7_Overleaf.pdf"
     - icon: linkedin
       text: LinkedIn
-      href: "#" # Add your LinkedIn URL here
+      href: "https://www.linkedin.com/in/mukhilguna" 
 ---
 
 ## About Me
