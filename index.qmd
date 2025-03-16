@@ -12,7 +12,7 @@ about:
       text: Email
       href: "mailto:mukhil@g.ucla.edu"
     - icon: file-text
-      text: Resume
+      text: Resume / CV
       href: "/Resume7_Overleaf.pdf"
     - icon: linkedin
       text: LinkedIn
