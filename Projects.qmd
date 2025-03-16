@@ -8,12 +8,7 @@ title: "Projects"
 
 [View Project](/projects/project1.qmd)
 
-This project analyzes the effectiveness of different pitch sequences used by the UCLA baseball team:
-
--   Statistical analysis of pitch sequencing patterns
--   Evaluation of swing and miss percentages based on pitch type
--   Visualization of whiff rates and chase percentages
--   Identification of optimal pitch combinations
+This project analyzes the effectiveness of different pitch sequences used by the UCLA baseball team.
 
 **Technologies used:** R, ggplot2, dplyr, gridExtra
 
