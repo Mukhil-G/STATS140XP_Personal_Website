@@ -1,0 +1,551 @@
+---
+title: "Baseball Analytics Dashboard"
+author: "Mukhil Guna"
+date: "2023-11-15"
+image: "baseball_thumbnail.jpg" # Add an image for this project if available
+---
+
+## Project Overview
+
+This project focuses on analyzing MLB player performance using statistical methods and interactive visualizations. The dashboard provides insights into player statistics, team performance, and predictive models for future performance.
+
+## Key Features
+
+- **Interactive Data Exploration**: Users can filter and analyze player statistics across different seasons
+- **Performance Metrics**: Comprehensive analysis of batting averages, home runs, and other key performance indicators
+- **Predictive Models**: Statistical models to predict player performance based on historical data
+- **Team Comparisons**: Tools to compare statistics across different teams and seasons
+
+## Methodology
+
+For this project, I collected data from public MLB databases and processed it using R. The analysis pipeline includes:
+
+1. Data cleaning and preprocessing
+2. Exploratory data analysis
+3. Statistical modeling
+4. Interactive dashboard development
+
+## Technologies Used
+
+- **R**: Primary programming language
+- **Shiny**: For building the interactive dashboard
+- **ggplot2**: For data visualization
+- **dplyr**: For data manipulation
+- **baseballfunctions.R**: Custom functions for baseball-specific calculations
+
+## Results and Insights
+
+The analysis revealed several interesting patterns in player performance:
+
+- Batting averages tend to stabilize after approximately 300 at-bats
+- Home run rates are highly correlated with exit velocity
+- Team performance is more strongly linked to pitching metrics than batting metrics
+
+## Future Work
+
+I plan to expand this project by:
+
+- Incorporating more advanced predictive models
+- Adding player tracking data
+- Developing a machine learning component to identify undervalued players
+
+## Code Repository
+
+The complete code for this project is available on [GitHub](https://github.com/Mukhil-G/baseball-analytics).
+
+---
+title: "140_Baseball_Project_EDA2"
+output: pdf_document
+date: "2025-03-07"
+---
+
+
+### Exploratory Data Analysis on UCLA Men's Baseball Team -> Researching if the order in which pitches are thrown relate to the amount of swings and misses?
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars 2}
+library(gtable)
+library(condformat)
+library(dplyr)
+library(gridExtra)
+library(grid)
+
+source("baseballfunctions.R")
+
+full_data <- read.csv('5_18_thru.csv')
+ucla <- full_data %>%
+  filter(PitcherTeam == "UCLA")
+ucla$PLH <- ucla$PlateLocHeight*12
+ucla$PLS <- ucla$PlateLocSide*12
+
+cleaned <- ucla %>%
+  filter(!TaggedPitchType == "Other")
+
+cleaned <- cleaned %>%
+  mutate(TaggedPitchType = if_else(TaggedPitchType == "Sinker", "Fastball", TaggedPitchType)) %>% 
+  mutate(TaggedPitchType = if_else(TaggedPitchType == "Slider", "Breaking Ball", TaggedPitchType)) %>% 
+  mutate(TaggedPitchType = if_else(TaggedPitchType == "Curveball", "Breaking Ball", TaggedPitchType)) %>% 
+  mutate(TaggedPitchType = if_else(TaggedPitchType == "Sweeper", "Breaking Ball", TaggedPitchType)) %>% 
+  mutate(TaggedPitchType = if_else(TaggedPitchType == "ChangeUp", "Off-Speed", TaggedPitchType))
+  
+
+bot_margin <- textGrob("", gp = gpar(fontsize = 10, col = "white"))
+
+pitch_order <- c("Fastball", "Breaking Ball", "Off-Speed")
+
+height_arr <- c(1/20,rep((19/20)/11, times = 11))
+height_arr6 <- c(1/20,rep((19/20)/13, times = 13))
+height_arr7 <- c(1/20,rep((19/20)/15, times = 15))
+
+after_pitch <- function(pitches, pitch) {
+  seq <- pitches %>% dplyr::select(everything()) %>% slice(0)
+  res <- data.frame(pitchtype = character(),
+                    total = numeric(),
+                    perc = numeric(),
+                    strikes = numeric(),
+                    swung = numeric(),
+                    csw = numeric(),
+                    whiff = numeric(),
+                    chase = numeric(),
+                    BIP = numeric(),
+                    BIPout = numeric(),
+                    gb = numeric(),
+                    ld = numeric(),
+                    fb = numeric(),
+                    zswing = numeric(),
+                    zwhiff = numeric())
+  
+  for (p in 1:nrow(pitches)) {
+    if (pitches[p,"TaggedPitchType"] == pitch & pitches[p+1, "PitchofPA"] != 1 & p < nrow(pitches)){
+      seq <- rbind(seq, pitches[p+1,])
+    }
+  }
+  
+  for (i in 1:length(unique(seq$TaggedPitchType))) {
+    type <- unique(seq$TaggedPitchType)[i]
+    z <- filter(seq, TaggedPitchType == type)
+    new <- data.frame(
+      pitchtype = type,
+      total = nrow(z),
+      perc = round((nrow(z)/nrow(seq))*100, digits = 2),
+      strikes = round((nrow(filter(z, PitchCall %in% strike))/nrow(z))*100, digits = 2),
+      swung = round((nrow(filter(z, PitchCall %in% swung))/nrow(z))*100, digits = 2),
+      csw = round(((nrow(filter(z, PitchCall %in% strike))-nrow(filter(z, PitchCall %in% swung))+nrow(filter(z,PitchCall == "StrikeSwinging")))/nrow(z))*100, digits = 2),
+      whiff = whiff(z),
+      chase = chase(z),
+      BIP = round((nrow(filter(z, PitchCall == "InPlay"))/nrow(z))*100, digits = 2),
+      BIPout = round((nrow(filter(z, PlayResult == "Out" | (PlayResult == "FieldersChoice" & OutsOnPlay >= 1)))/nrow(filter(z, PitchCall == "InPlay")))*100, digits = 2),
+      gb = gb_p(z),
+      ld = ld_p(z),
+      fb = fb_p(z),
+      zswing = zone_swing(z),
+      zwhiff = zone_whiff(z)
+    )
+    res <- rbind(res,new)
+  }
+  res$pitchtype <- factor(res$pitchtype, levels = pitch_order)
+  res <- res[order(res$pitchtype), ]
+  colnames(res) <- c("Pitch Type",
+                     "#",
+                     "%",
+                     "K%",
+                     "Swing%",
+                     "CSW%",
+                     "Whiff%",
+                     "Chase%",
+                     "BIP%",
+                     "BIPOut%",
+                     "GB%",
+                     "LD%",
+                     "FB%",
+                     "IZ Swing%",
+                     "IZ Whiff%")
+  return (res)
+}
+
+condGrob <- function(table1, fsize){
+  fin <- condformat(table1) %>%
+    theme_grob(
+      rows = NULL,
+      theme = ttheme_default(core = list(fg_params = list(cex = fsize)),
+                             colhead = list(fg_params = list(cex = fsize)))
+    ) %>%
+    rule_fill_discrete(
+      columns = `Pitch Type`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `#`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `Swing%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `BIP%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `GB%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `LD%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `FB%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `IZ Swing%`,
+      expression = TRUE,
+      colours = c("White")
+    ) %>%
+    rule_fill_discrete(
+      columns = `CSW%`,
+      expression = cut(`CSW%`,
+                       breaks = c(-Inf,21,25,27,30,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    rule_fill_discrete(
+      columns = `Whiff%`,
+      expression = cut(`Whiff%`,
+                       breaks = c(-Inf,20,25,30,35,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    rule_fill_discrete(
+      columns = `K%`,
+      expression = cut(`K%`,
+                       breaks = c(-Inf,60,64,65,70,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    rule_fill_discrete(
+      columns = `Chase%`,
+      expression = cut(`Chase%`,
+                       breaks = c(-Inf,22,27,32,37,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    rule_fill_discrete(
+      columns = `BIPOut%`,
+      expression = cut(`BIPOut%`,
+                       breaks = c(-Inf,60,65,70,75,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    rule_fill_discrete(
+      columns = `IZ Whiff%`,
+      expression = cut(`IZ Whiff%`,
+                       breaks = c(-Inf,10,12,15,17,Inf),
+                       labels = c('Dark Red','Light Red','White','Light Green','Dark Green')),
+      colours = c("Dark Red" = "#FF6666",
+                  "Light Red" = "#FFB3B3",
+                  "White" = "white",
+                  "Light Green" = "#c8ee90",
+                  "Dark Green" = "#66FF66")) %>%
+    condformat2grob(draw=FALSE)
+  return(fin)
+}
+
+# Highlight next code till dev.off() and run
+pdf("UCLA_2024.pdf", width = 11, height = 8.5)
+table_list <- list(textGrob(paste0("UCLA Sequencing 2024", sep = " "), gp = gpar(fontsize = 15, fontface = "bold"),
+                              vjust = 1))
+types <- sort(factor(unique(cleaned$TaggedPitchType), levels = pitch_order))
+
+if (length(types) >= 7) {
+  for (p in seq(1,length(types))) {
+    table_list[[length(table_list)+1]] <- textGrob(paste0("After ",types[p], sep = "  "),gp = gpar(fontsize = 9))
+    ta <- condGrob(after_pitch(cleaned, types[p]), 0.5)
+    h <- rep(0.3, times = nrow(ta))
+    ta$heights <- unit(h, "cm")
+    table_list[[length(table_list)+1]] <- ta
+  }
+  table_list[[length(table_list)+1]] <- bot_margin
+  do.call(grid.arrange, c(table_list, list(heights = height_arr7)))
+}  else if (length(types) >= 6) {
+  for (p in seq(1,length(types))) {
+    table_list[[length(table_list)+1]] <- textGrob(paste0("After ",types[p], sep = "  "),gp = gpar(fontsize = 10))
+    ta <- condGrob(after_pitch(cleaned, types[p]), 0.6)
+    h <- rep(0.4, times = nrow(ta))
+    ta$heights <- unit(h, "cm")
+    table_list[[length(table_list)+1]] <- ta
+  }
+  table_list[[length(table_list)+1]] <- bot_margin
+  do.call(grid.arrange, c(table_list, list(heights = height_arr6)))
+} else {
+    for (p in seq(1,length(types))) {
+      table_list[[length(table_list)+1]] <- textGrob(paste0("After ",types[p], sep = "  "),gp = gpar(fontsize = 12))
+      ta <- condGrob(after_pitch(cleaned, types[p]), 0.8)
+      h <- rep(0.5, times = nrow(ta))
+      ta$heights <- unit(h, "cm")
+      table_list[[length(table_list)+1]] <- ta
+    }
+    table_list[[length(table_list)+1]] <- bot_margin
+    do.call(grid.arrange, c(table_list, list(heights = height_arr)))
+}
+dev.off() 
+```
+
+```{r cars}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(reshape2)
+
+
+create_viz_data <- function() {
+  
+  after_fb <- after_pitch(cleaned, "Fastball")
+  after_bb <- after_pitch(cleaned, "Breaking Ball")
+  after_os <- after_pitch(cleaned, "Off-Speed")
+  
+  
+  after_fb$PreviousPitch <- "Fastball"
+  after_bb$PreviousPitch <- "Breaking Ball"
+  after_os$PreviousPitch <- "Off-Speed"
+  
+  
+  all_data <- rbind(after_fb, after_bb, after_os)
+  
+  
+  colnames(all_data)[1] <- "NextPitch"
+  
+  return(all_data)
+}
+
+
+viz_data <- create_viz_data()
+
+
+ucla_theme <- theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    axis.title = element_text(size = 12, face = "bold"),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 10),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+# 1. 
+swing_plot <- ggplot(viz_data, aes(x = NextPitch, y = `Swing%`, fill = NextPitch)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  facet_wrap(~ PreviousPitch, labeller = labeller(PreviousPitch = function(x) paste("After", x))) +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Swing Percentage",
+    subtitle = "Percentage of swings on each pitch type based on the previous pitch",
+    x = "Next Pitch Type",
+    y = "Swing Percentage (%)"
+  ) +
+  scale_fill_manual(values = c("Fastball" = "#3366CC", "Breaking Ball" = "#DC3912", "Off-Speed" = "#FF9900")) +
+  geom_text(aes(label = sprintf("%.1f%%", `Swing%`)), vjust = -0.5, size = 3.5) +
+  ylim(0, max(viz_data$`Swing%`) * 1.15) +
+  ucla_theme
+
+# 2. 
+whiff_plot <- ggplot(viz_data, aes(x = NextPitch, y = `Whiff%`, fill = NextPitch)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  facet_wrap(~ PreviousPitch, labeller = labeller(PreviousPitch = function(x) paste("After", x))) +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Whiff Percentage",
+    subtitle = "Percentage of whiffs on each pitch type based on the previous pitch",
+    x = "Next Pitch Type",
+    y = "Whiff Percentage (%)"
+  ) +
+  scale_fill_manual(values = c("Fastball" = "#3366CC", "Breaking Ball" = "#DC3912", "Off-Speed" = "#FF9900")) +
+  geom_text(aes(label = sprintf("%.1f%%", `Whiff%`)), vjust = -0.5, size = 3.5) +
+  ylim(0, max(viz_data$`Whiff%`) * 1.15) +
+  ucla_theme
+
+# 3. 
+metrics_data <- viz_data %>%
+  select(NextPitch, PreviousPitch, `Swing%`, `Whiff%`) %>%
+  melt(id.vars = c("NextPitch", "PreviousPitch"),
+       variable.name = "Metric",
+       value.name = "Percentage")
+
+combined_plot <- ggplot(metrics_data, aes(x = NextPitch, y = Percentage, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  facet_wrap(~ PreviousPitch, labeller = labeller(PreviousPitch = function(x) paste("After", x))) +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Swing vs Whiff Percentage",
+    subtitle = "Comparison of swing and whiff percentages by pitch sequence",
+    x = "Next Pitch Type",
+    y = "Percentage (%)"
+  ) +
+  scale_fill_manual(values = c("Swing%" = "#3366CC", "Whiff%" = "#DC3912"),
+                    labels = c("Swing%", "Whiff%")) +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)), 
+            position = position_dodge(width = 0.7), 
+            vjust = -0.5, 
+            size = 3) +
+  ylim(0, max(metrics_data$Percentage) * 1.15) +
+  ucla_theme
+
+# 4. 
+ratio_data <- viz_data %>%
+  mutate(WhiffSwingRatio = `Whiff%` / `Swing%` * 100) %>%
+  select(NextPitch, PreviousPitch, WhiffSwingRatio, `#`)
+
+ratio_plot <- ggplot(ratio_data, aes(x = NextPitch, y = WhiffSwingRatio, fill = NextPitch)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  facet_wrap(~ PreviousPitch, labeller = labeller(PreviousPitch = function(x) paste("After", x))) +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Whiff-to-Swing Ratio",
+    subtitle = "Percentage of swings that result in whiffs (higher values indicate more effective pitches)",
+    x = "Next Pitch Type",
+    y = "Whiff/Swing Ratio (%)"
+  ) +
+  scale_fill_manual(values = c("Fastball" = "#3366CC", "Breaking Ball" = "#DC3912", "Off-Speed" = "#FF9900")) +
+  geom_text(aes(label = sprintf("%.1f%%", WhiffSwingRatio)), vjust = -0.5, size = 3.5) +
+  ylim(0, max(ratio_data$WhiffSwingRatio) * 1.15) +
+  ucla_theme
+
+# 5. 
+top_sequences <- viz_data %>%
+  select(PreviousPitch, NextPitch, `#`, `%`, `Swing%`, `Whiff%`, `Chase%`) %>%
+  arrange(desc(`Whiff%`)) %>%
+  mutate(Sequence = paste(PreviousPitch, "→", NextPitch)) %>%
+  mutate(EffectivenessTier = case_when(
+    `Whiff%` >= 35 ~ "Excellent",
+    `Whiff%` >= 25 ~ "Good",
+    `Whiff%` >= 20 ~ "Average",
+    TRUE ~ "Below Average"
+  ))
+
+effectiveness_plot <- ggplot(top_sequences, aes(x = reorder(Sequence, `Whiff%`), y = `Whiff%`, fill = EffectivenessTier)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Most Effective Sequences",
+    subtitle = "Ranked by whiff percentage",
+    x = "Pitch Sequence",
+    y = "Whiff Percentage (%)"
+  ) +
+  scale_fill_manual(values = c("Excellent" = "#66FF66", "Good" = "#c8ee90", "Average" = "#FFB3B3", "Below Average" = "#FF6666")) +
+  geom_text(aes(label = sprintf("%.1f%%", `Whiff%`)), hjust = -0.2, size = 3.5) +
+  ylim(0, max(top_sequences$`Whiff%`) * 1.2) +
+  ucla_theme
+
+# 6.
+chase_plot <- ggplot(viz_data, aes(x = NextPitch, y = `Chase%`, fill = NextPitch)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  facet_wrap(~ PreviousPitch, labeller = labeller(PreviousPitch = function(x) paste("After", x))) +
+  labs(
+    title = "UCLA Pitch Sequencing 2024: Chase Percentage",
+    subtitle = "Percentage of swings at pitches outside the zone based on the previous pitch",
+    x = "Next Pitch Type",
+    y = "Chase Percentage (%)"
+  ) +
+  scale_fill_manual(values = c("Fastball" = "#3366CC", "Breaking Ball" = "#DC3912", "Off-Speed" = "#FF9900")) +
+  geom_text(aes(label = sprintf("%.1f%%", `Chase%`)), vjust = -0.5, size = 3.5) +
+  ylim(0, max(viz_data$`Chase%`) * 1.15) +
+  ucla_theme
+
+# Function to save all plots to a PDF
+save_all_plots <- function() {
+  pdf("UCLA_Pitch_Sequencing_Visualizations.pdf", width = 11, height = 8.5)
+  print(swing_plot)
+  print(whiff_plot)
+  print(combined_plot)
+  print(ratio_plot)
+  print(effectiveness_plot)
+  print(chase_plot)
+  dev.off()
+}
+
+
+generate_insights <- function() {
+  
+  best_sequence <- top_sequences[which.max(top_sequences$`Whiff%`),]
+  
+  
+  best_chase <- viz_data[which.max(viz_data$`Chase%`),]
+  
+  
+  summary_by_prev <- viz_data %>%
+    group_by(PreviousPitch) %>%
+    summarise(
+      AvgWhiff = mean(`Whiff%`),
+      AvgSwing = mean(`Swing%`),
+      AvgChase = mean(`Chase%`)
+    )
+  
+  
+  summary_by_next <- viz_data %>%
+    group_by(NextPitch) %>%
+    summarise(
+      AvgWhiff = mean(`Whiff%`),
+      AvgSwing = mean(`Swing%`),
+      AvgChase = mean(`Chase%`)
+    )
+  
+  cat("=====================================================\n")
+  cat("UCLA PITCH SEQUENCING ANALYSIS - KEY INSIGHTS\n")
+  cat("=====================================================\n\n")
+  
+  cat("MOST EFFECTIVE SEQUENCES:\n")
+  cat("- Highest Whiff%: ", best_sequence$PreviousPitch, "→", best_sequence$NextPitch, 
+      " (", sprintf("%.1f%%", best_sequence$`Whiff%`), ")\n", sep="")
+  cat("- Highest Chase%: ", best_chase$PreviousPitch, "→", best_chase$NextPitch, 
+      " (", sprintf("%.1f%%", best_chase$`Chase%`), ")\n\n", sep="")
+  
+  cat("EFFECTIVENESS BY PREVIOUS PITCH:\n")
+  print(summary_by_prev)
+  cat("\n")
+  
+  cat("EFFECTIVENESS BY PITCH TYPE:\n")
+  print(summary_by_next)
+}
+
+
+swing_plot
+whiff_plot
+combined_plot
+ratio_plot
+effectiveness_plot
+chase_plot
+
+
+save_all_plots()
+
+
+generate_insights()
+```

@@ -1,16 +1,49 @@
 ---
-title: "140-personal-website"
+title: "Mukhil Guna"
+about:
+  template: broadside
+  image: profilepic1.png
+  image-width: 200px
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com/Mukhil-G
+    - icon: envelope
+      text: Email
+      href: "mailto:mukhil@g.ucla.edu"
+    - icon: file-text
+      text: CV
+      href: "/CV.pdf"
+    - icon: linkedin
+      text: LinkedIn
+      href: "#" # Add your LinkedIn URL here
 ---
 
-This is a Quarto website.
+## About Me
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+I am a Statistics student at UCLA with a passion for data analysis and statistical modeling. My academic journey focuses on leveraging statistical methods to extract meaningful insights from complex datasets.
 
-```{r}
-1 + 1
-```
+When not immersed in data and analytics, I enjoy playing soccer and exploring the vibrant city of Los Angeles.
 
-```{r}
-runif(10)
-rnorm(10)
-```
+Feel free to explore my [projects](/Projects.qmd) or download my [CV](/CV.pdf) to learn more about my work.
+
+## Education
+
+**University of California, Los Angeles** \| Los Angeles, CA\
+B.S. in Statistics \| Sept 2023 - June 2025
+
+## Skills
+
+-   Statistical Analysis
+-   Data Visualization
+-   R Programming
+-   Python
+-   Machine Learning
+-   SQL
+
+## Research Interests
+
+-   Statistical Modeling
+-   Data Science
+-   Machine Learning Applications
+-   Sports Analytics

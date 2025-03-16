@@ -1,5 +1,6 @@
 project:
   type: website
+  output-dir: docs
 
 website:
   title: "Mukhil Guna"
@@ -8,6 +9,8 @@ website:
       - href: index.qmd
         text: Landing Page
       - about.qmd
+      - href: Projects.qmd
+        text: Projects
 
 format:
   html:
@@ -18,4 +21,7 @@ format:
     toc: true
 
 editor: visual
+
+execute: 
+  freeze: auto
 

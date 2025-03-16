@@ -1,0 +1,37 @@
+---
+title: "Projects"
+---
+
+## Featured Projects
+
+Here you'll find a collection of my data science and statistics projects. Each project demonstrates different analytical skills and techniques.
+
+### Baseball Analytics Dashboard
+
+[View Project](/projects/project1.qmd)
+
+This interactive dashboard analyzes MLB player performance metrics using R Shiny. The project includes:
+
+- Statistical analysis of batting averages across seasons
+- Predictive modeling for player performance
+- Interactive visualizations of team statistics
+- Comparative analysis of player metrics
+
+**Technologies used:** R, Shiny, ggplot2, dplyr
+
+### Predictive Modeling for Stock Prices
+
+[View Project](#) <!-- Add actual link when available -->
+
+A machine learning approach to predict stock price movements based on historical data and market indicators:
+
+- Time series analysis of market trends
+- Feature engineering from financial indicators
+- Implementation of LSTM neural networks
+- Backtesting and model evaluation
+
+**Technologies used:** Python, TensorFlow, Pandas, NumPy
+
+### More Projects Coming Soon
+
+I'm currently working on several new projects that will be added here. Check back soon for updates!
