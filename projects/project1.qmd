@@ -4,8 +4,7 @@ output: pdf_document
 date: "2025-03-07"
 ---
 
-
-### Exploratory Data Analysis on UCLA Men's Baseball Team -> Researching if the order in which pitches are thrown relate to the amount of swings and misses?
+### Exploratory Data Analysis on UCLA Men's Baseball Team -\> Researching if the order in which pitches are thrown relate to the amount of swings and misses?
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
